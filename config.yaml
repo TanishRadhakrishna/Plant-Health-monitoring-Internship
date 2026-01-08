@@ -1,0 +1,5 @@
+image_size: 224
+num_classes: 4
+train_split: 0.7
+val_split: 0.15
+test_split: 0.15
