@@ -14,7 +14,7 @@ with open('config.yaml', 'r') as f:
 
 def build_model(model_name=None, num_classes=None, pretrained=True):
     """
-    Build and compile the classification model
+    Build and compile the classification model with enhanced architecture
     
     Args:
         model_name: Model architecture to use
@@ -22,7 +22,7 @@ def build_model(model_name=None, num_classes=None, pretrained=True):
         pretrained: Use ImageNet pretrained weights
     
     Returns:
-        Compiled Keras model
+        Compiled Keras model, base_model
     """
     if model_name is None:
         model_name = config['model']['name']
@@ -54,24 +54,43 @@ def build_model(model_name=None, num_classes=None, pretrained=True):
     else:
         raise ValueError(f"Unknown model: {model_name}")
     
-    # Classification head
+    # Enhanced classification head for higher accuracy
     x = base_model.output
+    
+    # First dense block
     x = layers.BatchNormalization()(x)
     x = layers.Dropout(dropout)(x)
     x = layers.Dense(512, activation='relu', 
-                     kernel_regularizer=keras.regularizers.l2(0.001))(x)
+                     kernel_regularizer=keras.regularizers.l2(0.001),
+                     name='dense_512')(x)
+    
+    # Second dense block
     x = layers.BatchNormalization()(x)
     x = layers.Dropout(dropout / 2)(x)
     x = layers.Dense(256, activation='relu',
-                     kernel_regularizer=keras.regularizers.l2(0.001))(x)
-    x = layers.Dropout(dropout / 2)(x)
-    outputs = layers.Dense(num_classes, activation='softmax')(x)
+                     kernel_regularizer=keras.regularizers.l2(0.001),
+                     name='dense_256')(x)
+    
+    # Third dense block for better feature separation
+    x = layers.BatchNormalization()(x)
+    x = layers.Dropout(dropout / 3)(x)
+    x = layers.Dense(128, activation='relu',
+                     kernel_regularizer=keras.regularizers.l2(0.001),
+                     name='dense_128')(x)
+    
+    # Output layer
+    x = layers.Dropout(dropout / 4)(x)
+    outputs = layers.Dense(num_classes, activation='softmax', name='predictions')(x)
     
     # Create model
     model = Model(inputs=inputs, outputs=outputs, name=f'plant_health_{model_name}')
     
     # Freeze base model initially
     base_model.trainable = False
+    
+    print(f"\n✓ Model architecture: {model_name}")
+    print(f"✓ Pretrained weights: {'ImageNet' if pretrained else 'Random initialization'}")
+    print(f"✓ Number of classes: {num_classes}")
     
     return model, base_model
 
@@ -84,6 +103,9 @@ def unfreeze_model(model, base_model, num_layers=None):
         model: Full model
         base_model: Base model to unfreeze
         num_layers: Number of layers to unfreeze (from the end)
+    
+    Returns:
+        Model with unfrozen layers
     """
     if num_layers is None:
         num_layers = config['model']['unfreeze_layers']
@@ -98,22 +120,29 @@ def unfreeze_model(model, base_model, num_layers=None):
     for layer in base_model.layers[:freeze_until]:
         layer.trainable = False
     
-    print(f"■ Unfroze last {num_layers} layers of base model")
-    print(f"  Total layers: {total_layers}")
-    print(f"  Trainable layers: {sum(1 for l in base_model.layers if l.trainable)}")
-    print(f"  Frozen layers: {sum(1 for l in base_model.layers if not l.trainable)}")
+    trainable_count = sum(1 for l in base_model.layers if l.trainable)
+    frozen_count = sum(1 for l in base_model.layers if not l.trainable)
+    
+    print(f"\n■ Base Model Unfreezing:")
+    print(f" Total layers: {total_layers}")
+    print(f" Trainable layers: {trainable_count}")
+    print(f" Frozen layers: {frozen_count}")
+    print(f" Unfroze last {num_layers} layers")
     
     return model
 
 
 def compile_model(model, learning_rate=None, use_mixed_precision=False):
     """
-    Compile model with optimizer, loss, and metrics
+    Compile model with optimizer, loss, and metrics optimized for high accuracy
     
     Args:
         model: Keras model to compile
         learning_rate: Initial learning rate
         use_mixed_precision: Use mixed precision training
+    
+    Returns:
+        Compiled model
     """
     if learning_rate is None:
         learning_rate = config['training']['initial_lr']
@@ -122,18 +151,22 @@ def compile_model(model, learning_rate=None, use_mixed_precision=False):
     if use_mixed_precision:
         policy = keras.mixed_precision.Policy('mixed_float16')
         keras.mixed_precision.set_global_policy(policy)
-        print("■ Mixed precision training enabled")
+        print("\n✓ Mixed precision training enabled (faster training, lower memory)")
     
-    # Optimizer
-    optimizer = keras.optimizers.Adam(learning_rate=learning_rate)
+    # Optimizer with gradient clipping for stability
+    optimizer = keras.optimizers.Adam(
+        learning_rate=learning_rate,
+        clipnorm=config['training']['gradient_clip']
+    )
     
     # Loss function
     loss = keras.losses.SparseCategoricalCrossentropy(from_logits=False)
     
-    # Metrics
+    # Comprehensive metrics for tracking performance
     metrics = [
         keras.metrics.SparseCategoricalAccuracy(name='accuracy'),
-        keras.metrics.SparseTopKCategoricalAccuracy(k=2, name='top_2_accuracy')
+        keras.metrics.SparseTopKCategoricalAccuracy(k=2, name='top_2_accuracy'),
+        keras.metrics.SparseTopKCategoricalAccuracy(k=3, name='top_3_accuracy')
     ]
     
     model.compile(
@@ -142,67 +175,9 @@ def compile_model(model, learning_rate=None, use_mixed_precision=False):
         metrics=metrics
     )
     
+    print(f"✓ Model compiled with learning rate: {learning_rate}")
+    
     return model
-
-
-def get_callbacks(patience=None):
-    """
-    Create training callbacks
-    
-    Args:
-        patience: Early stopping patience
-    
-    Returns:
-        List of Keras callbacks
-    """
-    if patience is None:
-        patience = config['training']['patience']
-    
-    models_dir = config['paths']['models']
-    logs_dir = config['paths']['logs']
-    
-    callbacks = [
-        # Model checkpoint - save best model
-        keras.callbacks.ModelCheckpoint(
-            filepath=f"{models_dir}/best_model.keras",
-            monitor='val_accuracy',
-            mode='max',
-            save_best_only=True,
-            verbose=1
-        ),
-        
-        # Early stopping
-        keras.callbacks.EarlyStopping(
-            monitor='val_loss',
-            patience=patience,
-            restore_best_weights=True,
-            verbose=1
-        ),
-        
-        # Reduce learning rate on plateau
-        keras.callbacks.ReduceLROnPlateau(
-            monitor='val_loss',
-            factor=0.5,
-            patience=patience // 2,
-            min_lr=config['training']['min_lr'],
-            verbose=1
-        ),
-        
-        # TensorBoard logging
-        keras.callbacks.TensorBoard(
-            log_dir=logs_dir,
-            histogram_freq=1,
-            write_graph=True
-        ),
-        
-        # CSV logger
-        keras.callbacks.CSVLogger(
-            f"{logs_dir}/training_log.csv",
-            append=True
-        )
-    ]
-    
-    return callbacks
 
 
 def print_model_summary(model):
@@ -216,9 +191,11 @@ def print_model_summary(model):
     total_params = model.count_params()
     trainable_params = sum([tf.size(w).numpy() for w in model.trainable_weights])
     
-    print(f"\n■ Total parameters: {total_params:,}")
-    print(f"■ Trainable parameters: {trainable_params:,}")
-    print(f"■ Non-trainable parameters: {total_params - trainable_params:,}")
+    print(f"\n■ Parameter Statistics:")
+    print(f" Total parameters: {total_params:,}")
+    print(f" Trainable parameters: {trainable_params:,}")
+    print(f" Non-trainable parameters: {total_params - trainable_params:,}")
+    print(f" Trainable %: {trainable_params/total_params*100:.2f}%")
     print("="*70 + "\n")
 
 
@@ -232,3 +209,4 @@ if __name__ == "__main__":
     print_model_summary(model)
     
     print("\n✓ Model built successfully!")
+    print("✓ Ready for training with high accuracy configuration")

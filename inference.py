@@ -102,8 +102,21 @@ class PlantHealthPredictor:
         predicted_class = self.class_names[predicted_class_idx]
         confidence = probabilities[predicted_class_idx]
         
+        # === Category & Subtype mapping (ADD HERE) ===
+        if predicted_class.startswith("Pest_"):
+            category = "Pest"
+            subtype = predicted_class.replace("Pest_", "")
+        elif predicted_class.startswith("Nutrient_"):
+            category = "Nutrient Deficiency"
+            subtype = predicted_class.replace("Nutrient_", "")
+        else:
+            category = predicted_class
+            subtype = None
+        
         result = {
             'predicted_class': predicted_class,
+            'category': category,
+            'subtype': subtype,
             'confidence': float(confidence),
             'confidence_percentage': float(confidence * 100)
         }
@@ -156,10 +169,15 @@ class PlantHealthPredictor:
         
         # Add interpretation based on predicted class
         explanations = {
-            'Healthy': "The plant appears healthy with no visible signs of disease or stress.",
-            'Pest': "Pest damage detected. Look for visible insects, holes in leaves, or chewed edges. Consider applying appropriate pesticides.",
-            'Nutrient_Deficiency': "Nutrient deficiency detected. Check for yellowing leaves, stunted growth, or discoloration. Consider soil testing and appropriate fertilization.",
-            'Water_Stress': "Water stress detected. The plant may be experiencing drought or overwatering. Check soil moisture and adjust watering schedule."
+            "Healthy": "The plant appears healthy with no visible issues.",
+
+            "Pest_Fungal": "Fungal infection detected. Look for powdery spots or mold.",
+            "Pest_Bacterial": "Bacterial infection detected. Look for water-soaked lesions.",
+            "Pest_Insect": "Insect damage detected. Look for holes or chewed edges.",
+            
+            "Nutrient_Nitrogen": "Nitrogen deficiency detected. Yellowing of older leaves.",
+            "Nutrient_Potassium": "Potassium deficiency detected. Leaf edge browning and weak stems.",
+            "Water_Stress": "Water stress detected. Check watering conditions."
         }
         
         result['explanation'] = explanations.get(
