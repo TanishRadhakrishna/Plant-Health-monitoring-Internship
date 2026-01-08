@@ -381,14 +381,30 @@ def main(args):
         f.write(f"Model: {args.model_name}\n")
         f.write(f"Training completed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
     
+    # Generate training visualizations
+    print("\n" + "="*70)
+    print("GENERATING TRAINING VISUALIZATIONS")
+    print("="*70 + "\n")
+    
+    try:
+        from visualize_training import plot_combined_metrics, load_training_logs
+        phase1_df, phase2_df = load_training_logs()
+        plot_combined_metrics(phase1_df, phase2_df)
+        print("✓ Training graphs generated successfully!")
+    except Exception as e:
+        print(f"⚠ Could not generate training graphs: {e}")
+        print("You can generate them manually by running: python visualize_training.py")
+    
     print("\n" + "="*70)
     print("✓ Training completed successfully!")
     print(f"Finished at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*70)
     print("\nNext steps:")
-    print(" 1. Run: python evaluate.py")
-    print(" 2. Test predictions: python inference.py path/to/image.jpg --explain")
-    print(" 3. Visualize: python explainability.py path/to/image.jpg --all_classes")
+    print(" 1. View training graphs: outputs/training_visualization.png")
+    print(" 2. Run evaluation: python evaluate.py")
+    print(" 3. Test predictions: python inference.py path/to/image.jpg --explain")
+    print(" 4. Visualize model attention: python explainability.py path/to/image.jpg --all_classes")
+    print(" 5. Generate more graphs: python visualize_training.py")
     print("="*70 + "\n")
 
 
