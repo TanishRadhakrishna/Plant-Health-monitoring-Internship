@@ -348,7 +348,11 @@ def main(args):
     print("FINAL EVALUATION ON TEST SET")
     print("="*70 + "\n")
     
-    test_loss, test_acc, test_top2 = model.evaluate(test_gen, verbose=1)
+    test_results = model.evaluate(test_gen, verbose=1)
+    test_loss = test_results[0]
+    test_acc = test_results[1]
+    test_top2 = test_results[2]
+    test_top3 = test_results[3] if len(test_results) > 3 else None
     
     print(f"\n■ Training Summary:")
     print(f" Phase 1 epochs: {training_summary['phase1_epochs']}")
@@ -361,6 +365,8 @@ def main(args):
     print(f" Loss: {test_loss:.4f}")
     print(f" Accuracy: {test_acc*100:.2f}%")
     print(f" Top-2 Accuracy: {test_top2*100:.2f}%")
+    if test_top3 is not None:
+        print(f" Top-3 Accuracy: {test_top3*100:.2f}%")
     
     # Save test results
     with open(f"{config['paths']['logs']}/test_results.txt", 'w') as f:
@@ -377,8 +383,10 @@ def main(args):
         f.write("="*70 + "\n")
         f.write(f"Test Loss: {test_loss:.4f}\n")
         f.write(f"Test Accuracy: {test_acc:.4f} ({test_acc*100:.2f}%)\n")
-        f.write(f"Test Top-2 Accuracy: {test_top2:.4f} ({test_top2*100:.2f}%)\n\n")
-        f.write(f"Model: {args.model_name}\n")
+        f.write(f"Test Top-2 Accuracy: {test_top2:.4f} ({test_top2*100:.2f}%)\n")
+        if test_top3 is not None:
+            f.write(f"Test Top-3 Accuracy: {test_top3:.4f} ({test_top3*100:.2f}%)\n")
+        f.write(f"\nModel: {args.model_name}\n")
         f.write(f"Training completed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
     
     # Generate training visualizations
