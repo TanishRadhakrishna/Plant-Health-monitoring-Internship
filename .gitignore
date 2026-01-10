@@ -1,2 +1,10 @@
 venv
 AI_Module
+script.py
+*.pdf
+*.png
+__pycache__/
+*.pyc
+.DS_Store
+.vscode/
+data/

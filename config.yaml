@@ -1,5 +1,67 @@
-image_size: 224
-num_classes: 4
-train_split: 0.7
-val_split: 0.15
-test_split: 0.15
+# Model Configuration
+model:
+  name: 'efficientnetv2_b2' # Options: efficientnetv2_b2, convnext_tiny, vit_base_patch16_224
+  pretrained: true
+  num_classes: 7
+  dropout: 0.3
+  unfreeze_layers: 30 # Number of layers to unfreeze for fine-tuning
+
+# Image Configuration
+image:
+  size: 224
+  channels: 3
+  normalize_mean: [0.485, 0.456, 0.406]
+  normalize_std: [0.229, 0.224, 0.225]
+
+# Data Split
+data:
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+  random_seed: 42
+
+# Training Configuration - Optimized for High Accuracy
+training:
+  batch_size: 32
+  epochs: 150 # Maximum total epochs (will stop early if no improvement)
+  initial_lr: 0.001
+  min_lr: 0.00001
+  patience: 15 # Patience for Phase 2 early stopping
+  phase1_transition_patience: 5 # Epochs without improvement to trigger Phase 2
+  use_mixed_precision: true
+  gradient_clip: 1.0
+
+# Data Augmentation - Enhanced for better generalization
+augmentation:
+  rotation_range: 40
+  width_shift: 0.2
+  height_shift: 0.2
+  zoom_range: 0.2
+  horizontal_flip: true
+  vertical_flip: true
+  brightness_range: [0.7, 1.3]
+  # Additional augmentation applied in data_generator.py:
+  # - RandomBrightnessContrast
+  # - HueSaturationValue
+  # - GaussianBlur / MedianBlur
+  # - GaussNoise / ISONoise
+  # - RandomShadow
+
+# Class Information
+classes:
+  - Healthy
+  - Pest_Fungal
+  - Pest_Bacterial
+  - Pest_Insect
+  - Nutrient_Nitrogen
+  - Nutrient_Potassium
+  - Water_Stress
+
+# Paths
+paths:
+  raw_data: 'AI_Module/data/raw'
+  processed_data: 'Data/processed'
+  splits: 'Data/splits'
+  models: 'saved_models'
+  logs: 'logs'
+  outputs: 'outputs'
