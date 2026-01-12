@@ -12,7 +12,7 @@ with open('config.yaml', 'r') as f:
 
 class PlantDataGenerator(Sequence):
     """
-    Custom data generator with strong augmentation using Albumentations
+    Custom data generator with enhanced augmentation for high accuracy
     """
     
     def __init__(self, split_file, batch_size=32, shuffle=True, augment=True):
@@ -44,7 +44,7 @@ class PlantDataGenerator(Sequence):
     
     def _get_transforms(self):
         """
-        Define augmentation pipeline using Albumentations
+        Define enhanced augmentation pipeline for better generalization
         """
         if not self.augment:
             return A.Compose([
@@ -73,29 +73,68 @@ class PlantDataGenerator(Sequence):
                 p=0.7
             ),
             
-            # Color augmentations
+            # Advanced geometric transformations
+            A.ElasticTransform(
+                alpha=1,
+                sigma=50,
+                alpha_affine=50,
+                border_mode=cv2.BORDER_REFLECT,
+                p=0.3
+            ),
+            A.GridDistortion(
+                num_steps=5,
+                distort_limit=0.3,
+                border_mode=cv2.BORDER_REFLECT,
+                p=0.3
+            ),
+            A.OpticalDistortion(
+                distort_limit=0.05,
+                shift_limit=0.05,
+                border_mode=cv2.BORDER_REFLECT,
+                p=0.3
+            ),
+            
+            # Color augmentations - enhanced
             A.RandomBrightnessContrast(
                 brightness_limit=0.3,
                 contrast_limit=0.3,
-                p=0.5
+                p=0.6
             ),
             A.HueSaturationValue(
                 hue_shift_limit=20,
                 sat_shift_limit=30,
                 val_shift_limit=20,
-                p=0.5
+                p=0.6
+            ),
+            A.RGBShift(
+                r_shift_limit=20,
+                g_shift_limit=20,
+                b_shift_limit=20,
+                p=0.4
+            ),
+            A.ChannelShuffle(p=0.2),
+            
+            # Color temperature and tint (simulates different lighting)
+            A.ColorJitter(
+                brightness=0.2,
+                contrast=0.2,
+                saturation=0.2,
+                hue=0.1,
+                p=0.4
             ),
             
-            # Blur and noise
+            # Blur and noise - realistic
             A.OneOf([
-                A.GaussianBlur(blur_limit=(3, 5), p=1),
-                A.MedianBlur(blur_limit=5, p=1),
+                A.GaussianBlur(blur_limit=(3, 7), p=1),
+                A.MedianBlur(blur_limit=7, p=1),
+                A.MotionBlur(blur_limit=7, p=1),
             ], p=0.3),
             
             A.OneOf([
                 A.GaussNoise(var_limit=(10, 50), p=1),
                 A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5), p=1),
-            ], p=0.2),
+                A.MultiplicativeNoise(multiplier=(0.9, 1.1), p=1),
+            ], p=0.25),
             
             # Weather effects (realistic outdoor conditions)
             A.RandomShadow(
@@ -105,8 +144,52 @@ class PlantDataGenerator(Sequence):
                 shadow_dimension=5,
                 p=0.3
             ),
+            A.RandomFog(
+                fog_coef_lower=0.1,
+                fog_coef_upper=0.3,
+                alpha_coef=0.1,
+                p=0.15
+            ),
+            A.RandomRain(
+                slant_lower=-10,
+                slant_upper=10,
+                drop_length=20,
+                drop_width=1,
+                drop_color=(200, 200, 200),
+                blur_value=3,
+                brightness_coefficient=0.9,
+                rain_type=None,
+                p=0.15
+            ),
+            A.RandomSunFlare(
+                flare_roi=(0, 0, 1, 0.5),
+                angle_lower=0,
+                angle_upper=1,
+                num_flare_circles_lower=6,
+                num_flare_circles_upper=10,
+                src_radius=400,
+                p=0.15
+            ),
             
-            # Normalize
+            # Quality degradation (simulates different camera qualities)
+            A.OneOf([
+                A.Downscale(scale_min=0.5, scale_max=0.75, p=1),
+                A.ImageCompression(quality_lower=60, quality_upper=90, p=1),
+            ], p=0.2),
+            
+            # Cutout / Random Erasing (prevents overfitting to specific patterns)
+            A.CoarseDropout(
+                max_holes=8,
+                max_height=32,
+                max_width=32,
+                min_holes=1,
+                min_height=8,
+                min_width=8,
+                fill_value=0,
+                p=0.3
+            ),
+            
+            # Normalize (must be last)
             A.Normalize(
                 mean=config['image']['normalize_mean'],
                 std=config['image']['normalize_std']
@@ -156,6 +239,9 @@ class PlantDataGenerator(Sequence):
 def get_data_generators(batch_size=32):
     """
     Create data generators for train, validation, and test sets
+    
+    Returns:
+        train_gen, val_gen, test_gen
     """
     splits_dir = config['paths']['splits']
     
@@ -163,21 +249,21 @@ def get_data_generators(batch_size=32):
         split_file=os.path.join(splits_dir, 'train.txt'),
         batch_size=batch_size,
         shuffle=True,
-        augment=True
+        augment=True  # Heavy augmentation for training
     )
     
     val_gen = PlantDataGenerator(
         split_file=os.path.join(splits_dir, 'val.txt'),
         batch_size=batch_size,
         shuffle=False,
-        augment=False
+        augment=False  # No augmentation for validation
     )
     
     test_gen = PlantDataGenerator(
         split_file=os.path.join(splits_dir, 'test.txt'),
         batch_size=batch_size,
         shuffle=False,
-        augment=False
+        augment=False  # No augmentation for testing
     )
     
     return train_gen, val_gen, test_gen
@@ -185,7 +271,7 @@ def get_data_generators(batch_size=32):
 
 if __name__ == "__main__":
     # Test the data generator
-    print("Testing data generator...")
+    print("Testing enhanced data generator...")
     
     train_gen, val_gen, test_gen = get_data_generators(batch_size=4)
     
@@ -198,4 +284,5 @@ if __name__ == "__main__":
     print(f"\nBatch shape: {X_batch.shape}")
     print(f"Labels shape: {y_batch.shape}")
     print(f"Pixel range: [{X_batch.min():.2f}, {X_batch.max():.2f}]")
-    print("\n✓ Data generator working correctly!")
+    print("\n✓ Enhanced data generator working correctly!")
+    print("✓ Heavy augmentation enabled for better generalization")
