@@ -1,10 +1,97 @@
-venv
-AI_Module
-script.py
-*.pdf
-*.png
+# =========================
+# Python / ML
+# =========================
+venv/
 __pycache__/
 *.pyc
-.DS_Store
-.vscode/
+*.pyo
+*.pyd
+
+# AI / ML artifacts
+AI_Module/
+saved_models/
 data/
+
+# =========================
+# Generated files
+# =========================
+*.pdf
+*.png
+
+# =========================
+# Node.js / Backend
+# =========================
+node_modules/
+package-lock.json
+yarn.lock
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.local
+.env.development.local
+.env.*.local
+.env.example
+
+# =========================
+# Database files
+# =========================
+*.sqlite
+*.sqlite3
+*.db
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+error.log
+combined.log
+
+# =========================
+# Uploads (runtime files)
+# =========================
+uploads/*
+!uploads/.gitkeep
+
+# =========================
+# Build outputs
+# =========================
+dist/
+build/
+
+# =========================
+# Test / Coverage
+# =========================
+coverage/
+.nyc_output/
+
+# =========================
+# Temporary files
+# =========================
+tmp/
+temp/
+*.tmp
+*.bak
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+script.py
+pdf.py
