@@ -1,29 +1,48 @@
-export const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-};
-
-export const truncateText = (text, maxLength) => {
-  if (text.length <= maxLength) return text;
-  return text.substring(0, maxLength) + '...';
-};
-
-export const getClassColor = (predictedClass) => {
-  if (!predictedClass) return 'bg-gray-100 text-gray-800';
+export const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffTime = Math.abs(now - date)
+  const diffMinutes = Math.floor(diffTime / (1000 * 60))
+  const diffHours = Math.floor(diffTime / (1000 * 60 * 60))
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   
-  if (predictedClass === 'Healthy') {
-    return 'bg-green-100 text-green-800';
+  if (diffMinutes < 1) {
+    return 'Just now'
+  } else if (diffMinutes < 60) {
+    return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`
+  } else if (diffHours < 24) {
+    return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
+  } else if (diffDays === 1) {
+    return 'Yesterday'
+  } else if (diffDays < 7) {
+    return `${diffDays} days ago`
+  } else {
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    })
   }
-  
-  const category = predictedClass.split('_')[0];
-  const colors = {
-    Pest: 'bg-red-100 text-red-800',
-    Nutrient: 'bg-yellow-100 text-yellow-800',
-    Water: 'bg-blue-100 text-blue-800',
-  };
-  
-  return colors[category] || 'bg-gray-100 text-gray-800';
-};
+}
+
+export const formatDateTime = (dateString) => {
+  const date = new Date(dateString)
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+export const truncateText = (text, maxLength = 50) => {
+  if (text.length <= maxLength) return text
+  return text.substring(0, maxLength) + '...'
+}
+
+export const getImageUrl = (path) => {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  return `${import.meta.env.VITE_API_URL}${path}`
+}

@@ -1,88 +1,65 @@
-  // src/App.jsx
-  import React from 'react';
-  import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-  import { AuthProvider } from './context/AuthContext';
-  import PrivateRoute from './components/auth/PrivateRoute';
-  import LoginForm from './components/auth/LoginForm';
-  import RegisterForm from './components/auth/RegisterForm';
-  import Dashboard from './pages/Dashboard';
-  import Predict from './pages/Predict';
-  import History from './pages/History';
-  import Profile from './pages/Profile';
-  import Home from './pages/Home';
-  import Result from './pages/Result';
-  import Navbar from './components/Layout/Navbar';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import { ToastProvider } from './contexts/ToastContext'
+import { useAuth } from './hooks/useAuth'
 
-  function App() {
+// Pages
+import Home from './pages/Home'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Dashboard from './pages/Dashboard'
+import Profile from './pages/Profile'
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth()
+  
+  if (loading) {
     return (
-      <AuthProvider>
-        <Router>
-          <Navbar />
-          {/* Add top padding so fixed header doesn't overlap content */}
-          <div className="pt-20">
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<LoginForm />} />
-              <Route path="/register" element={<RegisterForm />} />
-
-              {/* Protected routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <PrivateRoute>
-                    <Dashboard />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/predict"
-                element={
-                  <PrivateRoute>
-                    <Predict />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/history"
-                element={
-                  <PrivateRoute>
-                    <History />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/history/:sessionId"
-                element={
-                  <PrivateRoute>
-                    <History />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <PrivateRoute>
-                    <Profile />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/result/:predictionId"
-                element={
-                  <PrivateRoute>
-                    <Result />
-                  </PrivateRoute>
-                }
-              />
-
-              {/* 404 Not Found */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </div>
-        </Router>
-      </AuthProvider>
-    );
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-forest-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    )
   }
-  export default App;
+  
+  return user ? children : <Navigate to="/login" />
+}
 
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <ToastProvider>
+          <Routes>
+            {/* Public route - NO LOGIN REQUIRED */}
+            <Route path="/" element={<Home />} />
+            
+            {/* Optional auth routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            
+            {/* Protected routes - HISTORY TRACKING */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </ToastProvider>
+      </AuthProvider>
+    </Router>
+  )
+}
+
+export default App
