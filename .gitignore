@@ -7,4 +7,22 @@ __pycache__/
 *.pyc
 .DS_Store
 .vscode/
+<<<<<<< HEAD
 data/
+=======
+data/
+# Backend ignores
+backend/node_modules/
+backend/.env
+backend/.env.*
+
+# Frontend ignores (safe to keep)
+frontend/node_modules/
+frontend/.env
+frontend/.env.*
+
+# General
+node_modules/
+.env
+.env.*
+>>>>>>> origin/main
