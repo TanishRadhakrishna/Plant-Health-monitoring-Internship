@@ -91,22 +91,26 @@ Prediction.belongsTo(PredictionSession, {
 /**
  * Sync Database
  * Create tables if they don't exist
+ * FIXED: Proper options handling
  */
 const syncDatabase = async (options = {}) => {
   try {
-    const { force = false, alter = false } = options;
+    // Default options
+    const syncOptions = {
+      force: options.force || false,
+      alter: options.alter || false,
+    };
 
-    await sequelize.sync({ force, alter });
+    logger.info("Synchronizing database with options", syncOptions);
 
-    logger.info("Database synchronized successfully", {
-      force,
-      alter,
-    });
+    await sequelize.sync(syncOptions);
 
+    logger.info("Database synchronized successfully");
     return true;
   } catch (error) {
     logger.error("Error synchronizing database", {
       error: error.message,
+      stack: error.stack,
     });
     throw error;
   }
