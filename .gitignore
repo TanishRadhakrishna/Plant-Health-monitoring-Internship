@@ -1,28 +1,278 @@
-venv
-AI_Module
-script.py
-*.pdf
-*.png
+# ============================================
+# PYTHON
+# ============================================
 __pycache__/
+*.py[cod]
 *.pyc
-.DS_Store
-.vscode/
-<<<<<<< HEAD
-data/
-=======
-data/
-# Backend ignores
-backend/node_modules/
-backend/.env
-backend/.env.*
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# Frontend ignores (safe to keep)
-frontend/node_modules/
-frontend/.env
-frontend/.env.*
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+pythonenv*/
 
-# General
+# ============================================
+# MACHINE LEARNING & AI
+# ============================================
+# Model files
+*.pth
+*.pt
+*.h5
+*.pb
+*.onnx
+*.tflite
+*.pkl
+*.pickle
+*.joblib
+*.weights
+*.model
+backend/ai/saved_models/
+training/saved_models/
+checkpoints/
+
+# Training outputs
+outputs/
+outputs/gradcam/
+outputs/*.png
+outputs/*.txt
+outputs/*.jpg
+
+# Training logs
+logs/
+logs/phase1/
+logs/phase2/
+logs/train/
+logs/validation/
+training_log.csv
+training_phase1.csv
+training_phase2.csv
+
+# TensorBoard events
+events.out.tfevents.*
+
+# Training data
+training/data/
+data/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# ============================================
+# NODE.JS & JAVASCRIPT
+# ============================================
 node_modules/
+backend/node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+package-lock.json
+
+# ============================================
+# FRONTEND BUILD
+# ============================================
+frontend/dist/
+frontend/build/
+frontend/.vite/
+.vite/
+
+# ============================================
+# BACKEND SPECIFIC
+# ============================================
+backend/public/
+backend/logs/
+backend/uploads/
+backend/uploads/*.png
+backend/uploads/*.jpg
+backend/uploads/*.jpeg
+backend/uploads/*.gif
+
+# ============================================
+# ENVIRONMENT & SECRETS
+# ============================================
 .env
 .env.*
->>>>>>> origin/main
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
+training/.env
+backend/ai/secrets/
+secrets/
+.secrets/
+*.key
+*.pem
+*.cert
+
+# ============================================
+# DATABASE
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+database.sqlite
+backend/database.sqlite
+
+# ============================================
+# MEDIA & UPLOADS
+# ============================================
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+
+# Exceptions - Keep specific frontend assets
+!frontend/public/*.png
+!frontend/public/*.jpg
+!frontend/public/*.svg
+!frontend/public/favicon.ico
+!frontend/public/Leaforalogo.png
+!frontend/public/vite.svg
+!frontend/src/assets/**/*.jpg
+!frontend/src/assets/**/*.png
+!frontend/src/assets/images/hero-plant.jpg
+
+# ============================================
+# LOGS
+# ============================================
+*.log
+
+# ============================================
+# IDE & EDITORS
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.code-workspace
+
+# ============================================
+# OPERATING SYSTEM
+# ============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.AppleDouble
+.LSOverride
+Icon
+.DocumentRevisions-V100
+.fseventsd
+.TemporaryItems
+.VolumeIcon.ico
+.com.apple.timemachine.donotpresent
+
+# Windows
+[Tt]humbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# ============================================
+# TESTING & COVERAGE
+# ============================================
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+.nyc_output/
+coverage/
+
+# ============================================
+# DOCUMENTATION BUILDS
+# ============================================
+docs/_build/
+site/
+
+# ============================================
+# ARCHIVES
+# ============================================
+*.tar.gz
+*.zip
+*.rar
+*.7z
+frontend.zip
+
+# ============================================
+# TEMPORARY FILES
+# ============================================
+temp/
+tmp/
+*.tmp
+*.bak
+*.orig
+.cache/
+
+# ============================================
+# TRAINING SPECIFIC
+# ============================================
+training/outputs/
+training/logs/
+training/checkpoints/
+training/data/
+training/*.csv
+
+# ============================================
+# PROJECT SPECIFIC
+# ============================================
+AI_Module/
+script.py
+
+# Keep important documentation
+!README.md
+!SETUP_GUIDE.md
+!QUICK_REFERENCE.md
+!COMPLETE_FILE_LIST.md
+!COMPLETE_DOCUMENTATION.md
