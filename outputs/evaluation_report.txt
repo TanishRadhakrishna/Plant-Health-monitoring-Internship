@@ -1,0 +1,36 @@
+======================================================================
+PLANT HEALTH MONITORING - EVALUATION REPORT
+======================================================================
+
+Overall Accuracy: 0.7979
+
+======================================================================
+CLASSIFICATION REPORT
+======================================================================
+
+                    precision    recall  f1-score   support
+
+           Healthy       0.80      0.72      0.76       276
+       Pest_Fungal       0.69      0.84      0.76       258
+    Pest_Bacterial       0.87      0.79      0.83       417
+       Pest_Insect       0.81      0.92      0.86       149
+ Nutrient_Nitrogen       0.68      0.87      0.76        75
+Nutrient_Potassium       0.84      0.72      0.78        75
+      Water_Stress       0.94      0.76      0.84        86
+
+          accuracy                           0.80      1336
+         macro avg       0.81      0.80      0.80      1336
+      weighted avg       0.81      0.80      0.80      1336
+
+======================================================================
+CONFUSION MATRIX (COUNTS)
+======================================================================
+
+                            Healthy    Pest_Fungal Pest_Bacterial    Pest_InsectNutrient_NitrogenNutrient_Potassium   Water_Stress
+Healthy                         198             27             33              6             11              0              1
+Pest_Fungal                      24            216             11              4              2              1              0
+Pest_Bacterial                   20             63            331              2              1              0              0
+Pest_Insect                       3              0              0            137              5              2              2
+Nutrient_Nitrogen                 0              2              1              2             65              4              1
+Nutrient_Potassium                0              5              3              6              7             54              0
+Water_Stress                      1              0              0             12              5              3             65
