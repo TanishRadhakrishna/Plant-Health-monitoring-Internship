@@ -243,7 +243,6 @@ site/
 *.zip
 *.rar
 *.7z
-frontend.zip
 
 # ============================================
 # TEMPORARY FILES
