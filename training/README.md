@@ -55,7 +55,7 @@ The project implements advanced deep learning training strategies, production-re
 ---
 
 ## Project Structure
-
+```
 leafora-plant-health/
 │
 ├── README.md # This file
@@ -127,10 +127,9 @@ leafora-plant-health/
 ├── calibrate_confidence.py
 ├── visualize_training.py
 └── verify_system.py
+```
 
 
-
----
 
 ## System Requirements
 
@@ -162,35 +161,41 @@ cd Plant-Health-monitoring-Internship/training
 ### Step 2: Create Virtual Environment
 
 Create a virtual environment to isolate project dependencies.
-
-> python -m venv venv
-
+```bash
+python -m venv venv
+```
 Activate the virtual environment:
 
 # Linux / macOS
+```bash
 source venv/bin/activate
-
+```
 # Windows
-> venv\Scripts\activate
+```bash
+venv\Scripts\activate
+```
 
 ### Step 3: Install Dependencies
 
 Install PyTorch according to your CUDA version.
 Example shown for CUDA 12.1.
 
-> pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-
+```bash
+ pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
 
 Install remaining dependencies:
 
-> pip install -r requirements.txt
-
+```bash
+pip install -r requirements.txt
+```
 ### Step 4: Verify Installation
 
 Verify that the system and environment are correctly configured.
 
-> python verify_system.py
-
+```bash
+python verify_system.py
+```
 
 This script checks CUDA availability, PyTorch installation, and required dependencies.
 
@@ -201,7 +206,7 @@ This script checks CUDA availability, PyTorch installation, and required depende
 ### requirements.txt
 
 > Contains all required Python dependencies including PyTorch, timm, OpenCV, albumentations, scikit-learn, and visualization libraries.
-
+```text
 torch==2.1.2+cu121
 torchvision==0.16.2+cu121
 torchaudio==2.1.2
@@ -219,32 +224,79 @@ tqdm==4.66.1
 PyYAML==6.0.1
 scipy==1.11.4
 imageio==2.33.1
-
+```
 ### config.yaml
 
 > Defines the model architecture, training parameters, augmentation settings, dataset splits, class definitions, and evaluation metrics.
+```text
 
 model:
-  name: efficientnet_b2
+  name: "efficientnet_b2"
   pretrained: true
-  num_classes: 8
+  num_classes: 8 # CHANGED: 7 → 8
   dropout: 0.2
+  unfreeze_layers: 35
+
 
 image:
   size: 224
   channels: 3
+  normalize_mean: [0.485, 0.456, 0.406]
+  normalize_std: [0.229, 0.224, 0.225]
+  max_pixel_value: 255.0
+
 
 data:
   train_split: 0.8
   val_split: 0.1
   test_split: 0.1
+  random_seed: 42
+
 
 training:
   batch_size: 16
   epochs: 200
   initial_lr: 0.0003
+  min_lr: 0.000001
+  patience: 20
+  phase1_transition_patience: 8
+  use_mixed_precision: true
+  gradient_clip: 1.0
+  num_workers: 4
+
+focal loss:
   use_focal_loss: true
+  focal_alpha: 0.25
   focal_gamma: 1.5
+
+class weighting: 
+  use_class_weights: true
+  class_weight_method: "balanced"
+  class_weight_power: 1.0
+  max_weight_cap: 5.0
+
+ label smoothing: 
+  label_smoothing: 0.1
+
+sampling strategy:
+  oversample_minority: true
+  sampling_strategy: "moderate"
+
+confidence caliberation:
+  temperature_scaling: true
+  mixup_alpha: 0.2
+
+
+augmentation:
+  rotation_range: 25
+  width_shift: 0.12
+  height_shift: 0.12
+  zoom_range: 0.12
+  horizontal_flip: true
+  vertical_flip: true
+  brightness_range: [0.85, 1.15]
+  augmentation_prob: 0.65
+
 
 classes:
   - Healthy
@@ -256,6 +308,46 @@ classes:
   - Water_Stress
   - Not_Plant
 
+
+class_counts:
+  Healthy: 1836
+  Pest_Fungal: 1720
+  Pest_Bacterial: 2780
+  Pest_Insect: 991
+  Nutrient_Nitrogen: 500
+  Nutrient_Potassium: 500
+  Water_Stress: 568
+  Not_Plant: 409 
+
+
+paths:
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  splits: "data/splits"
+  models: "saved_models"
+  logs: "logs"
+  outputs: "outputs"
+
+
+evaluation:
+  primary_metric: "macro_f1"
+  secondary_metrics:
+    - "balanced_accuracy"
+    - "per_class_f1"
+    - "confusion_matrix"
+
+  use_adaptive_threshold: true
+  per_class_thresholds: true
+  default_threshold: 0.60
+
+  min_acceptable_f1:
+    majority_classes: 0.70
+    minority_classes: 0.50
+
+  confidence_calibration: true
+  calibration_method: "temperature_scaling"
+
+```
 ## Dataset Preparation
 ### Recommended Dataset Size
 Class	Recommended Samples
@@ -272,8 +364,9 @@ Not_Plant	400+
 
 Create the required dataset directory structure:
 
-> mkdir -p data/raw/{Healthy,Pest_Fungal,Pest_Bacterial,Pest_Insect,Nutrient_Nitrogen,Nutrient_Potassium,Water_Stress,Not_Plant}
-
+```bash
+mkdir -p data/raw/{Healthy,Pest_Fungal,Pest_Bacterial,Pest_Insect,Nutrient_Nitrogen,Nutrient_Potassium,Water_Stress,Not_Plant}
+```
 
 Add images to the corresponding class folders.
 
@@ -288,45 +381,47 @@ Lighting: Diverse lighting conditions recommended
 ## Quick Start
 
 > Run the complete pipeline:
-
+```bash
 python verify_system.py
 python analyze_dataset.py
 python preprocessing.py
 python train.py
 python inference.py path/to/image.jpg --explain
-
+```
 ## Training Workflow
 ### Two-Phase Transfer Learning
 
-Phase 1
+- **Phase 1**
 
-Backbone frozen
+  -Backbone frozen
 
-Higher learning rate
+  -Higher learning rate
 
-Train classification head
+  -Train classification head
 
-Phase 2
+- **Phase 2**
 
-Entire model unfrozen
+  -Entire model unfrozen
 
-Lower learning rate
+  -Lower learning rate
 
-Fine-grained feature tuning
+  -Fine-grained feature tuning
 
 Saved artifacts include trained models, logs, and evaluation outputs.
 
 ## Evaluation and Calibration
 
 Run model evaluation and confidence calibration:
-
->python evaluate.py
- python calibrate_confidence.py
-
+```bash
+python evaluate.py
+python calibrate_confidence.py
+```
 
 Generated outputs include confusion matrices, per-class metrics, ROC curves, and confidence analysis.
 
 ## Inference
+```bash
 python inference.py path/to/image.jpg
 python inference.py path/to/image.jpg --explain
 python inference.py path/to/image.jpg --save
+```
